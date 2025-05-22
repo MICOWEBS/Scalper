@@ -40,10 +40,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (username: string, password: string) => {
     try {
-      const response = await axios.post<LoginResponse>('https://wbtx.onrender.com/auth/login', {
-        username,
-        password,
-      });
+      const formData = new URLSearchParams();
+      formData.append('username', username);
+      formData.append('password', password);
+
+      const response = await axios.post<LoginResponse>('https://wbtx.onrender.com/auth/login', 
+        formData,
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+        }
+      );
       const { access_token } = response.data;
       localStorage.setItem('token', access_token);
       setIsAuthenticated(true);
