@@ -40,7 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (username: string, password: string) => {
     try {
-      const response = await axios.post<LoginResponse>('http://localhost:8000/auth/login', {
+      const response = await axios.post<LoginResponse>('https://wbtx.onrender.com/auth/login', {
         username,
         password,
       });
