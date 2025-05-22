@@ -44,10 +44,16 @@ export default function DashboardPage() {
   const { data: stats } = useQuery<Stats>({
     queryKey: ['stats'],
     queryFn: async (): Promise<Stats> => {
-      const response = await axios.get<Stats>(API_ENDPOINTS.STATS.OVERVIEW, {
-        headers: getAuthHeader(),
-      });
-      return response.data;
+      try {
+        const response = await axios.get<Stats>(API_ENDPOINTS.STATS.OVERVIEW, {
+          headers: getAuthHeader(),
+        });
+        return response.data;
+      } catch (err) {
+        console.error('Error fetching dashboard stats:', err);
+        toast.error('Failed to load dashboard statistics');
+        throw err;
+      }
     },
   });
 
@@ -90,7 +96,8 @@ export default function DashboardPage() {
         }
       );
       toast.success('Bot started successfully');
-    } catch (error) {
+    } catch (err) {
+      console.error('Error starting bot:', err);
       toast.error('Failed to start bot');
     }
   };
@@ -105,7 +112,8 @@ export default function DashboardPage() {
         }
       );
       toast.success('Bot stopped successfully');
-    } catch (error) {
+    } catch (err) {
+      console.error('Error stopping bot:', err);
       toast.error('Failed to stop bot');
     }
   };
