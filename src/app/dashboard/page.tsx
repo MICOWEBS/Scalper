@@ -32,12 +32,6 @@ interface DailyStats {
   profit_usd: number;
 }
 
-interface WalletBalance {
-  token: string;
-  balance: number;
-  usd_value: number;
-}
-
 interface WalletBalancesResponse {
   BNB: number;
   USDT: number;
