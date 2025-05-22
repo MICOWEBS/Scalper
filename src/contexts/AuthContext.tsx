@@ -10,6 +10,21 @@ interface AuthContextType {
   logout: () => void;
 }
 
+interface LoginResponse {
+  access_token: string;
+}
+
+interface ApiError {
+  message: string;
+  status?: number;
+}
+
+interface ErrorResponse {
+  response?: {
+    data?: ApiError;
+  };
+}
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -25,7 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (username: string, password: string) => {
     try {
-      const response = await axios.post('http://localhost:8000/auth/login', {
+      const response = await axios.post<LoginResponse>('http://localhost:8000/auth/login', {
         username,
         password,
       });
@@ -35,7 +50,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       toast.success('Login successful!');
       router.push('/dashboard');
     } catch (error) {
-      toast.error('Login failed. Please check your credentials.');
+      const errorResponse = error as ErrorResponse;
+      const errorMessage = errorResponse?.response?.data?.message || 'Login failed. Please check your credentials.';
+      toast.error(errorMessage);
       throw error;
     }
   };
@@ -49,7 +66,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       toast.success('Registration successful! Please login.');
       router.push('/login');
     } catch (error) {
-      toast.error('Registration failed. Please try again.');
+      const errorResponse = error as ErrorResponse;
+      const errorMessage = errorResponse?.response?.data?.message || 'Registration failed. Please try again.';
+      toast.error(errorMessage);
       throw error;
     }
   };
