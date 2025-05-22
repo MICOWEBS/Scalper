@@ -38,6 +38,8 @@ interface WalletBalancesResponse {
   WBTC: number;
   prices: {
     BNB: number;
+    USDT: number;
+    WBTC: number;
   };
 }
 
@@ -97,7 +99,7 @@ export default function DashboardPage() {
           BNB: 0,
           USDT: 0,
           WBTC: 0,
-          prices: { BNB: 0 }
+          prices: { BNB: 0, USDT: 0, WBTC: 0 }
         };
       }
     },
@@ -145,9 +147,21 @@ export default function DashboardPage() {
   };
 
   const walletData = walletBalances ? [
-    { token: 'BNB', balance: walletBalances.BNB, usd_value: walletBalances.BNB * (walletBalances.prices?.BNB || 0) },
-    { token: 'USDT', balance: walletBalances.USDT, usd_value: walletBalances.USDT },
-    { token: 'WBTC', balance: walletBalances.WBTC, usd_value: walletBalances.WBTC * (walletBalances.prices?.WBTC || 0) }
+    { 
+      token: 'BNB', 
+      balance: walletBalances.BNB, 
+      usd_value: walletBalances.BNB * (walletBalances.prices?.BNB || 0) 
+    },
+    { 
+      token: 'USDT', 
+      balance: walletBalances.USDT, 
+      usd_value: walletBalances.USDT * (walletBalances.prices?.USDT || 1)
+    },
+    { 
+      token: 'WBTC', 
+      balance: walletBalances.WBTC, 
+      usd_value: walletBalances.WBTC * (walletBalances.prices?.WBTC || 0) 
+    }
   ] : [];
 
   return (
