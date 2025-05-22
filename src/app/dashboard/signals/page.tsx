@@ -25,7 +25,6 @@ export default function SignalsPage() {
   const [page, setPage] = useState(1);
   const [signalType, setSignalType] = useState<'ALL' | 'LONG' | 'SHORT'>('ALL');
   const pageSize = 10;
-  const [signals, setSignals] = useState<Signal[]>([]);
 
   const { data: signalsData, isLoading } = useQuery<SignalsResponse>({
     queryKey: ['signals', page, signalType],
@@ -59,7 +58,8 @@ export default function SignalsPage() {
       document.body.appendChild(link);
       link.click();
       link.remove();
-    } catch (error) {
+    } catch (err) {
+      console.error('Error exporting signals:', err);
       toast.error('Failed to export signals');
     }
   };

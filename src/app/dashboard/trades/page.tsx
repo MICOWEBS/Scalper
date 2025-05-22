@@ -48,7 +48,8 @@ export default function TradesPage() {
       document.body.appendChild(link);
       link.click();
       link.remove();
-    } catch (error) {
+    } catch (err) {
+      console.error('Error exporting trades:', err);
       toast.error('Failed to export trades');
     }
   };
