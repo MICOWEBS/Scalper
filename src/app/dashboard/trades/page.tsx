@@ -26,18 +26,29 @@ export default function TradesPage() {
     queryKey: ['trades', page, tradeType],
     queryFn: async (): Promise<{ trades: Trade[]; total: number }> => {
       try {
-        const response = await axios.get<{ trades: Trade[]; total: number }>(
+        const response = await axios.get<{ trades: Trade[]; total: number } | Trade[]>(
           `${API_ENDPOINTS.TRADES.LIST}?page=${page}&page_size=${pageSize}&trade_type=${tradeType}`,
           {
             headers: getAuthHeader(),
           }
         );
         console.log('Trades response:', response.data);
-        if (!response.data || !Array.isArray(response.data.trades)) {
-          console.error('Invalid trades data:', response.data);
-          return { trades: [], total: 0 };
+
+        // Handle case where API returns array directly
+        if (Array.isArray(response.data)) {
+          return {
+            trades: response.data,
+            total: response.data.length
+          };
         }
-        return response.data;
+
+        // Handle case where API returns object with trades and total
+        if (response.data && 'trades' in response.data && Array.isArray(response.data.trades)) {
+          return response.data;
+        }
+
+        console.error('Invalid trades data:', response.data);
+        return { trades: [], total: 0 };
       } catch (err) {
         console.error('Error fetching trades:', err);
         toast.error('Failed to load trades');

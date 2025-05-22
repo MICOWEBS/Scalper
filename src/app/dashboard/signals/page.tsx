@@ -8,12 +8,12 @@ import toast from 'react-hot-toast';
 import { API_ENDPOINTS, getAuthHeader } from '@/config/api';
 
 interface Signal {
-  id: number;
+  id: string;
+  type: 'buy' | 'sell';
+  rsi: number;
+  ema: number;
+  price_spread: number;
   timestamp: string;
-  signal_type: 'LONG' | 'SHORT';
-  price: number;
-  confidence: number;
-  status: 'ACTIVE' | 'CLOSED' | 'CANCELLED';
 }
 
 interface SignalsResponse {
@@ -23,25 +23,41 @@ interface SignalsResponse {
 
 export default function SignalsPage() {
   const [page, setPage] = useState(1);
-  const [signalType, setSignalType] = useState<'ALL' | 'LONG' | 'SHORT'>('ALL');
+  const [signalType, setSignalType] = useState<'ALL' | 'buy' | 'sell'>('ALL');
   const pageSize = 10;
 
   const { data: signalsData, isLoading } = useQuery<SignalsResponse>({
     queryKey: ['signals', page, signalType],
     queryFn: async (): Promise<SignalsResponse> => {
-      const response = await axios.get<SignalsResponse>(
-        `${API_ENDPOINTS.SIGNALS.LIST}?page=${page}&page_size=${pageSize}&signal_type=${signalType}`,
-        {
-          headers: getAuthHeader(),
+      try {
+        const response = await axios.get<Signal[] | { signals: Signal[]; total: number }>(
+          `${API_ENDPOINTS.SIGNALS.LIST}?page=${page}&page_size=${pageSize}&signal_type=${signalType}`,
+          {
+            headers: getAuthHeader(),
+          }
+        );
+        console.log('Signals response:', response.data);
+        
+        // Handle case where API returns array directly
+        if (Array.isArray(response.data)) {
+          return {
+            signals: response.data,
+            total: response.data.length
+          };
         }
-      );
-      return {
-        signals: response.data.signals.map(signal => ({
-          ...signal,
-          timestamp: new Date(signal.timestamp).toISOString(),
-        })),
-        total: response.data.total,
-      };
+
+        // Handle case where API returns object with signals and total
+        if (response.data && 'signals' in response.data && Array.isArray(response.data.signals)) {
+          return response.data as SignalsResponse;
+        }
+
+        console.error('Invalid signals data:', response.data);
+        return { signals: [], total: 0 };
+      } catch (err) {
+        console.error('Error fetching signals:', err);
+        toast.error('Failed to load signals');
+        return { signals: [], total: 0 };
+      }
     },
   });
 
@@ -72,12 +88,12 @@ export default function SignalsPage() {
           <div className="flex gap-4">
             <select
               value={signalType}
-              onChange={(e) => setSignalType(e.target.value as 'ALL' | 'LONG' | 'SHORT')}
+              onChange={(e) => setSignalType(e.target.value as 'ALL' | 'buy' | 'sell')}
               className="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             >
               <option value="ALL">All Signals</option>
-              <option value="LONG">Long Signals</option>
-              <option value="SHORT">Short Signals</option>
+              <option value="buy">Buy Signals</option>
+              <option value="sell">Sell Signals</option>
             </select>
             <button
               onClick={handleExport}
@@ -115,13 +131,13 @@ export default function SignalsPage() {
                     scope="col"
                     className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
                   >
-                    Confidence
+                    RSI
                   </th>
                   <th
                     scope="col"
                     className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
                   >
-                    Status
+                    Price Spread
                   </th>
                 </tr>
               </thead>
@@ -132,14 +148,14 @@ export default function SignalsPage() {
                       Loading...
                     </td>
                   </tr>
-                ) : signalsData?.signals.length === 0 ? (
+                ) : !signalsData || !signalsData.signals || signalsData.signals.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="py-4 text-center text-sm text-gray-500">
                       No signals found
                     </td>
                   </tr>
                 ) : (
-                  signalsData?.signals.map((signal: Signal) => (
+                  signalsData.signals.map((signal: Signal) => (
                     <tr key={signal.id}>
                       <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 sm:pl-6">
                         {new Date(signal.timestamp).toLocaleString()}
@@ -147,32 +163,22 @@ export default function SignalsPage() {
                       <td className="whitespace-nowrap px-3 py-4 text-sm">
                         <span
                           className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
-                            signal.signal_type === 'LONG'
+                            signal.type === 'buy'
                               ? 'bg-green-100 text-green-800'
                               : 'bg-red-100 text-red-800'
                           }`}
                         >
-                          {signal.signal_type}
+                          {signal.type.toUpperCase()}
                         </span>
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-900">
-                        ${signal.price.toFixed(2)}
+                        ${signal.ema.toFixed(2)}
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-900">
-                        {signal.confidence.toFixed(2)}%
+                        {signal.rsi.toFixed(2)}
                       </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm">
-                        <span
-                          className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
-                            signal.status === 'ACTIVE'
-                              ? 'bg-blue-100 text-blue-800'
-                              : signal.status === 'CLOSED'
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-gray-100 text-gray-800'
-                          }`}
-                        >
-                          {signal.status}
-                        </span>
+                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-900">
+                        {(signal.price_spread * 100).toFixed(2)}%
                       </td>
                     </tr>
                   ))
