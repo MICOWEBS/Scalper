@@ -60,20 +60,42 @@ export default function DashboardPage() {
   const { data: dailyStats } = useQuery<DailyStats[]>({
     queryKey: ['dailyStats'],
     queryFn: async (): Promise<DailyStats[]> => {
-      const response = await axios.get<DailyStats[]>(API_ENDPOINTS.STATS.DAILY, {
-        headers: getAuthHeader(),
-      });
-      return response.data;
+      try {
+        const response = await axios.get<DailyStats[]>(API_ENDPOINTS.STATS.DAILY, {
+          headers: getAuthHeader(),
+        });
+        console.log('Daily stats response:', response.data);
+        if (!Array.isArray(response.data)) {
+          console.error('Daily stats is not an array:', response.data);
+          return [];
+        }
+        return response.data;
+      } catch (err) {
+        console.error('Error fetching daily stats:', err);
+        toast.error('Failed to load daily statistics');
+        return [];
+      }
     },
   });
 
   const { data: walletBalances } = useQuery<WalletBalance[]>({
     queryKey: ['walletBalances'],
     queryFn: async (): Promise<WalletBalance[]> => {
-      const response = await axios.get<WalletBalance[]>(API_ENDPOINTS.WALLET.BALANCES, {
-        headers: getAuthHeader(),
-      });
-      return response.data;
+      try {
+        const response = await axios.get<WalletBalance[]>(API_ENDPOINTS.WALLET.BALANCES, {
+          headers: getAuthHeader(),
+        });
+        console.log('Wallet balances response:', response.data);
+        if (!Array.isArray(response.data)) {
+          console.error('Wallet balances is not an array:', response.data);
+          return [];
+        }
+        return response.data;
+      } catch (err) {
+        console.error('Error fetching wallet balances:', err);
+        toast.error('Failed to load wallet balances');
+        return [];
+      }
     },
   });
 
