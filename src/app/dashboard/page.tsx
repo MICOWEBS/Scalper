@@ -74,7 +74,7 @@ export default function DashboardPage() {
           console.error('Daily stats is not an array:', response.data);
           return [];
         }
-        return response.data;
+        return response.data || [];
       } catch (err) {
         console.error('Error fetching daily stats:', err);
         toast.error('Failed to load daily statistics');
@@ -91,6 +91,15 @@ export default function DashboardPage() {
           headers: getAuthHeader(),
         });
         console.log('Wallet balances response:', response.data);
+        if (!response.data) {
+          console.error('Wallet balances response is empty');
+          return {
+            BNB: 0,
+            USDT: 0,
+            WBTC: 0,
+            prices: { BNB: 0, USDT: 1, WBTC: 0 }
+          };
+        }
         return response.data;
       } catch (err) {
         console.error('Error fetching wallet balances:', err);
@@ -99,7 +108,7 @@ export default function DashboardPage() {
           BNB: 0,
           USDT: 0,
           WBTC: 0,
-          prices: { BNB: 0, USDT: 0, WBTC: 0 }
+          prices: { BNB: 0, USDT: 1, WBTC: 0 }
         };
       }
     },
@@ -149,18 +158,18 @@ export default function DashboardPage() {
   const walletData = walletBalances ? [
     { 
       token: 'BNB', 
-      balance: walletBalances.BNB, 
-      usd_value: walletBalances.BNB * (walletBalances.prices?.BNB || 0) 
+      balance: walletBalances.BNB || 0, 
+      usd_value: (walletBalances.BNB || 0) * (walletBalances.prices?.BNB || 0) 
     },
     { 
       token: 'USDT', 
-      balance: walletBalances.USDT, 
-      usd_value: walletBalances.USDT * (walletBalances.prices?.USDT || 1)
+      balance: walletBalances.USDT || 0, 
+      usd_value: (walletBalances.USDT || 0) * (walletBalances.prices?.USDT || 1)
     },
     { 
       token: 'WBTC', 
-      balance: walletBalances.WBTC, 
-      usd_value: walletBalances.WBTC * (walletBalances.prices?.WBTC || 0) 
+      balance: walletBalances.WBTC || 0, 
+      usd_value: (walletBalances.WBTC || 0) * (walletBalances.prices?.WBTC || 0) 
     }
   ] : [];
 
