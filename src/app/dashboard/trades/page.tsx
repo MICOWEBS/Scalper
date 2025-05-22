@@ -25,13 +25,24 @@ export default function TradesPage() {
   const { data: trades, isLoading } = useQuery<{ trades: Trade[]; total: number }>({
     queryKey: ['trades', page, tradeType],
     queryFn: async (): Promise<{ trades: Trade[]; total: number }> => {
-      const response = await axios.get<{ trades: Trade[]; total: number }>(
-        `${API_ENDPOINTS.TRADES.LIST}?page=${page}&page_size=${pageSize}&trade_type=${tradeType}`,
-        {
-          headers: getAuthHeader(),
+      try {
+        const response = await axios.get<{ trades: Trade[]; total: number }>(
+          `${API_ENDPOINTS.TRADES.LIST}?page=${page}&page_size=${pageSize}&trade_type=${tradeType}`,
+          {
+            headers: getAuthHeader(),
+          }
+        );
+        console.log('Trades response:', response.data);
+        if (!response.data || !Array.isArray(response.data.trades)) {
+          console.error('Invalid trades data:', response.data);
+          return { trades: [], total: 0 };
         }
-      );
-      return response.data;
+        return response.data;
+      } catch (err) {
+        console.error('Error fetching trades:', err);
+        toast.error('Failed to load trades');
+        return { trades: [], total: 0 };
+      }
     },
   });
 
@@ -128,14 +139,14 @@ export default function TradesPage() {
                       Loading...
                     </td>
                   </tr>
-                ) : trades?.trades.length === 0 ? (
+                ) : !trades || !trades.trades || trades.trades.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="py-4 text-center text-sm text-gray-500">
                       No trades found
                     </td>
                   </tr>
                 ) : (
-                  trades?.trades.map((trade: Trade) => (
+                  trades.trades.map((trade: Trade) => (
                     <tr key={trade.id}>
                       <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 sm:pl-6">
                         {new Date(trade.timestamp).toLocaleString()}
