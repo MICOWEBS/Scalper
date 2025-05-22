@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import Cookies from 'js-cookie';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -31,6 +32,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -86,10 +88,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
+    // Clear localStorage
     localStorage.removeItem('token');
+    
+    // Clear cookies
+    Cookies.remove('token');
+    
+    // Clear all cached queries
+    queryClient.clear();
+    
+    // Reset authentication state
     setIsAuthenticated(false);
-    router.push('/login');
+    
+    // Show success message
     toast.success('Logged out successfully');
+    
+    // Redirect to login page
+    router.push('/login');
   };
 
   return (
