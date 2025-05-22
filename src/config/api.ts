@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://wbtx.onrender.com';
 
 export const API_ENDPOINTS = {
   AUTH: {
@@ -25,7 +25,7 @@ export const API_ENDPOINTS = {
   WALLET: {
     BALANCES: `${API_BASE_URL}/wallet/balances`,
   },
-  WEBSOCKET: `ws://localhost:8000/ws`,
+  WEBSOCKET: `wss://wbtx.onrender.com/ws`,
 } as const;
 
 export const getAuthHeader = () => {
