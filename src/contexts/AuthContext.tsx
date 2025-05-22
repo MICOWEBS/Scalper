@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
+import Cookies from 'js-cookie';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -54,6 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       );
       const { access_token } = response.data;
       localStorage.setItem('token', access_token);
+      Cookies.set('token', access_token);
       setIsAuthenticated(true);
       toast.success('Login successful!');
       
