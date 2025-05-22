@@ -56,7 +56,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem('token', access_token);
       setIsAuthenticated(true);
       toast.success('Login successful!');
-      router.push('/dashboard');
+      
+      // Force a hard navigation to dashboard
+      window.location.href = '/dashboard';
     } catch (err) {
       const errorResponse = err as ErrorResponse;
       const errorMessage = errorResponse?.response?.data?.message || 'Login failed. Please check your credentials.';
