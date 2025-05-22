@@ -49,11 +49,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsAuthenticated(true);
       toast.success('Login successful!');
       router.push('/dashboard');
-    } catch (error) {
-      const errorResponse = error as ErrorResponse;
+    } catch (err) {
+      const errorResponse = err as ErrorResponse;
       const errorMessage = errorResponse?.response?.data?.message || 'Login failed. Please check your credentials.';
       toast.error(errorMessage);
-      throw error;
+      throw err;
     }
   };
 
@@ -65,11 +65,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       toast.success('Registration successful! Please login.');
       router.push('/login');
-    } catch (error) {
-      const errorResponse = error as ErrorResponse;
+    } catch (err) {
+      const errorResponse = err as ErrorResponse;
       const errorMessage = errorResponse?.response?.data?.message || 'Registration failed. Please try again.';
       toast.error(errorMessage);
-      throw error;
+      throw err;
     }
   };
 

@@ -25,8 +25,9 @@ export default function SignalsPage() {
   const [page, setPage] = useState(1);
   const [signalType, setSignalType] = useState<'ALL' | 'LONG' | 'SHORT'>('ALL');
   const pageSize = 10;
+  const [signals, setSignals] = useState<Signal[]>([]);
 
-  const { data: signals, isLoading } = useQuery<SignalsResponse>({
+  const { data: signalsData, isLoading } = useQuery<SignalsResponse>({
     queryKey: ['signals', page, signalType],
     queryFn: async (): Promise<SignalsResponse> => {
       const response = await axios.get<SignalsResponse>(
@@ -131,14 +132,14 @@ export default function SignalsPage() {
                       Loading...
                     </td>
                   </tr>
-                ) : signals?.signals.length === 0 ? (
+                ) : signalsData?.signals.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="py-4 text-center text-sm text-gray-500">
                       No signals found
                     </td>
                   </tr>
                 ) : (
-                  signals?.signals.map((signal: Signal) => (
+                  signalsData?.signals.map((signal: Signal) => (
                     <tr key={signal.id}>
                       <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 sm:pl-6">
                         {new Date(signal.timestamp).toLocaleString()}
@@ -181,7 +182,7 @@ export default function SignalsPage() {
           </div>
         </div>
 
-        {signals && signals.total > pageSize && (
+        {signalsData && signalsData.total > pageSize && (
           <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
             <div className="flex flex-1 justify-between sm:hidden">
               <button
@@ -193,7 +194,7 @@ export default function SignalsPage() {
               </button>
               <button
                 onClick={() => setPage(page + 1)}
-                disabled={page * pageSize >= signals.total}
+                disabled={page * pageSize >= signalsData.total}
                 className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
               >
                 Next
@@ -204,9 +205,9 @@ export default function SignalsPage() {
                 <p className="text-sm text-gray-700">
                   Showing <span className="font-medium">{(page - 1) * pageSize + 1}</span> to{' '}
                   <span className="font-medium">
-                    {Math.min(page * pageSize, signals.total)}
+                    {Math.min(page * pageSize, signalsData.total)}
                   </span>{' '}
-                  of <span className="font-medium">{signals.total}</span> results
+                  of <span className="font-medium">{signalsData.total}</span> results
                 </p>
               </div>
               <div>
@@ -223,7 +224,7 @@ export default function SignalsPage() {
                   </button>
                   <button
                     onClick={() => setPage(page + 1)}
-                    disabled={page * pageSize >= signals.total}
+                    disabled={page * pageSize >= signalsData.total}
                     className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
                   >
                     Next
