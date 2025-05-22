@@ -59,8 +59,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsAuthenticated(true);
       toast.success('Login successful!');
       
-      // Force a hard navigation to dashboard
-      window.location.href = '/dashboard';
+      // Use Next.js router for navigation
+      router.push('/dashboard');
     } catch (err) {
       const errorResponse = err as ErrorResponse;
       const errorMessage = errorResponse?.response?.data?.message || 'Login failed. Please check your credentials.';
@@ -71,7 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = async (username: string, password: string) => {
     try {
-      await axios.post('http://localhost:8000/auth/register', {
+      await axios.post('https://wbtx.onrender.com/auth/register', {
         username,
         password,
       });
