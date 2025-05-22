@@ -30,5 +30,12 @@ export const API_ENDPOINTS = {
 
 export const getAuthHeader = () => {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-  return token ? { Authorization: `Bearer ${token}` } : {};
+  if (!token) {
+    console.warn('No auth token found');
+    return {};
+  }
+  return {
+    Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json',
+  };
 }; 

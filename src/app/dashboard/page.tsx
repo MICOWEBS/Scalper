@@ -38,6 +38,15 @@ interface WalletBalance {
   usd_value: number;
 }
 
+interface WalletBalancesResponse {
+  BNB: number;
+  USDT: number;
+  WBTC: number;
+  prices: {
+    BNB: number;
+  };
+}
+
 export default function DashboardPage() {
   const [botStatus, setBotStatus] = useState<BotStatus>({ status: 'stopped' });
 
@@ -78,23 +87,24 @@ export default function DashboardPage() {
     },
   });
 
-  const { data: walletBalances } = useQuery<WalletBalance[]>({
+  const { data: walletBalances } = useQuery<WalletBalancesResponse>({
     queryKey: ['walletBalances'],
-    queryFn: async (): Promise<WalletBalance[]> => {
+    queryFn: async (): Promise<WalletBalancesResponse> => {
       try {
-        const response = await axios.get<WalletBalance[]>(API_ENDPOINTS.WALLET.BALANCES, {
+        const response = await axios.get<WalletBalancesResponse>(API_ENDPOINTS.WALLET.BALANCES, {
           headers: getAuthHeader(),
         });
         console.log('Wallet balances response:', response.data);
-        if (!Array.isArray(response.data)) {
-          console.error('Wallet balances is not an array:', response.data);
-          return [];
-        }
         return response.data;
       } catch (err) {
         console.error('Error fetching wallet balances:', err);
         toast.error('Failed to load wallet balances');
-        return [];
+        return {
+          BNB: 0,
+          USDT: 0,
+          WBTC: 0,
+          prices: { BNB: 0 }
+        };
       }
     },
   });
@@ -139,6 +149,12 @@ export default function DashboardPage() {
       toast.error('Failed to stop bot');
     }
   };
+
+  const walletData = walletBalances ? [
+    { token: 'BNB', balance: walletBalances.BNB, usd_value: walletBalances.BNB * (walletBalances.prices?.BNB || 0) },
+    { token: 'USDT', balance: walletBalances.USDT, usd_value: walletBalances.USDT },
+    { token: 'WBTC', balance: walletBalances.WBTC, usd_value: walletBalances.WBTC * (walletBalances.prices?.WBTC || 0) }
+  ] : [];
 
   return (
     <DashboardLayout>
@@ -248,7 +264,7 @@ export default function DashboardPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {walletBalances?.map((balance: WalletBalance) => (
+                  {walletData.map((balance) => (
                     <tr key={balance.token}>
                       <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 sm:pl-6">
                         {balance.token}

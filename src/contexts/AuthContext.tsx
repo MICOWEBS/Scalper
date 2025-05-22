@@ -56,8 +56,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       );
       const { access_token } = response.data;
+      
+      // Store token in both localStorage and cookies
       localStorage.setItem('token', access_token);
-      Cookies.set('token', access_token);
+      Cookies.set('token', access_token, { 
+        expires: 7, // 7 days
+        secure: true,
+        sameSite: 'strict'
+      });
+      
+      // Set authentication state
       setIsAuthenticated(true);
       toast.success('Login successful!');
       
